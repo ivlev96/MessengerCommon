@@ -23,9 +23,11 @@ public:
 	Person& operator = (const Person&) = default;
 
 	QString name() const;
-
 	QJsonObject toJson() const;
 
+	bool operator==(const Person& other) const;
+	bool operator!=(const Person& other) const;
+	
 public:
 	int id;
 	QString firstName;

@@ -37,3 +37,13 @@ QJsonObject Person::toJson() const
 		{ "avatarUrl", avatarUrl.toString() }
 	};
 }
+
+bool Common::Person::operator==(const Person& other) const
+{
+	return id == other.id;
+}
+
+bool Common::Person::operator!=(const Person & other) const
+{
+	return !(*this == other);
+}

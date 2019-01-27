@@ -7,6 +7,15 @@
 
 namespace Common
 {
+	
+enum class State : quint8
+{
+	NotSent,
+	Sent,
+	Delivered,
+	Read,
+	StatesCount
+};
 
 struct Message
 {

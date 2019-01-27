@@ -1,4 +1,5 @@
 #include "message.h"
+#include "common.h"
 
 using namespace Common;
 
@@ -17,10 +18,10 @@ Message::Message(
 Message::Message(const QJsonObject& json)
 	: from(json["from"].toObject())
 	, to(json["to"].toObject())
-	, dateTime(QDateTime::fromString(json["dateTime"].toString(), "dd.MM.yyyy hh:mm:ss"))
+	, dateTime(QDateTime::fromString(json["dateTime"].toString(), Common::dateTimeFormat))
 	, text(json["text"].toString())
 {
-
+	assert(!json.empty());
 }
 
 QJsonObject Message::toJson() const
@@ -29,7 +30,7 @@ QJsonObject Message::toJson() const
 	{
 		{ "from", from.toJson() },
 		{ "to", to.toJson() },
-		{ "dateTime", dateTime.toString("dd.MM.yyyy hh:mm:ss") },
+		{ "dateTime", dateTime.toString(Common::dateTimeFormat) },
 		{ "text", text }
 	};
 }
