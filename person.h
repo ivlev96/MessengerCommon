@@ -3,6 +3,7 @@
 #include <QJsonObject>
 #include <QString>
 #include <QUrl>
+#include <QMetaType>
 
 namespace Common
 {
@@ -36,3 +37,5 @@ public:
 };
 
 }
+
+Q_DECLARE_METATYPE(Common::Person);

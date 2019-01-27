@@ -1,9 +1,11 @@
 #pragma once
+#include "person.h"
+
 #include <QDateTime>
 #include <QString>
 #include <QUrl>
 #include <QJsonObject>
-#include "person.h"
+#include <QMetaType>
 
 namespace Common
 {
@@ -42,3 +44,5 @@ public:
 };
 
 }
+
+Q_DECLARE_METATYPE(Common::Message);
