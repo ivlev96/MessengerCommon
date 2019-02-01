@@ -11,9 +11,10 @@
 
 namespace Common
 {
+extern QString errorResponse;
 
-extern QString sendMessageRequest;
-extern QString sendMessageResponse;
+extern QString sendMessagesRequest;
+extern QString sendMessagesResponse;
 
 extern QString getMessagesRequest;
 extern QString getMessagesResponse;
@@ -26,43 +27,57 @@ extern QString registrationResponse;
 
 extern QString typeField;
 
-struct SendMessageRequest
+
+struct ErrorResponse
 {
-public:
-	SendMessageRequest(const SendMessageRequest&) = default;
+	explicit ErrorResponse(const QString& error);
+	explicit ErrorResponse(const QJsonObject& json);
 
-	SendMessageRequest() = delete;
-	SendMessageRequest& operator = (const SendMessageRequest&) = delete;
+	ErrorResponse(const ErrorResponse&) = default;
 
-	SendMessageRequest(
-		const Person& from,
-		const Person& to,
-		const QString& text);
-
-	explicit SendMessageRequest(const QJsonObject& json);
+	ErrorResponse() = delete;
+	ErrorResponse& operator = (const ErrorResponse&) = delete;
 
 	QJsonObject toJson() const;
 
 public:
-	Message message;
+	QString error;
 };
 
-struct SendMessageResponse
+struct SendMessagesRequest
 {
 public:
-	SendMessageResponse(const SendMessageResponse&) = default;
+	SendMessagesRequest(const SendMessagesRequest&) = default;
 
-	SendMessageResponse() = delete;
-	SendMessageResponse& operator = (const SendMessageResponse&) = delete;
+	SendMessagesRequest() = delete;
+	SendMessagesRequest& operator = (const SendMessagesRequest&) = delete;
 
-	SendMessageResponse(const SendMessageRequest& request, State state);
+	SendMessagesRequest(const std::vector<Message>& messages);
 
-	explicit SendMessageResponse(const QJsonObject& json);
+	explicit SendMessagesRequest(const QJsonObject& json);
 
 	QJsonObject toJson() const;
 
 public:
-	Message message;
+	std::vector<Message> messages;
+};
+
+struct SendMessagesResponse
+{
+public:
+	SendMessagesResponse(const SendMessagesResponse&) = default;
+
+	SendMessagesResponse() = delete;
+	SendMessagesResponse& operator = (const SendMessagesResponse&) = delete;
+
+	SendMessagesResponse(const SendMessagesRequest& request, State state);
+
+	explicit SendMessagesResponse(const QJsonObject& json);
+
+	QJsonObject toJson() const;
+
+public:
+	std::vector<Message> messages;
 	State state;
 };
 
@@ -70,7 +85,7 @@ public:
 struct GetMessagesRequest
 {
 public:
-	GetMessagesRequest(int id1, int id2, int count);
+	GetMessagesRequest(int id1, int id2, int count, int from = 0);
 	explicit GetMessagesRequest(const QJsonObject& json);
 
 	QJsonObject toJson() const;
@@ -79,6 +94,7 @@ public:
 	int id1;
 	int id2;
 	int count;
+	int from;
 };
 
 struct GetMessagesResponse

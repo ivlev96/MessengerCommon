@@ -1,8 +1,10 @@
 #include "commands.h"
 #include <QJsonArray>
 
-QString Common::sendMessageRequest("sendMessageRequest");
-QString Common::sendMessageResponse("sendMessageResponse");
+QString Common::errorResponse("error");
+
+QString Common::sendMessagesRequest("sendMessagesRequest");
+QString Common::sendMessagesResponse("sendMessagesResponse");
 
 QString Common::getMessagesRequest("getMessagesRequest");
 QString Common::getMessagesResponse("getMessagesResponse");
@@ -17,59 +19,112 @@ QString Common::typeField("_type");
 
 using namespace Common;
 
-SendMessageRequest::SendMessageRequest(
-	const Person& from,
-	const Person& to,
-	const QString& text)
-	: message(from, to, QDateTime::currentDateTime(), text)
+ErrorResponse::ErrorResponse(const QString& error)
+	: error(error)
 {
-
 }
 
-SendMessageRequest::SendMessageRequest(const QJsonObject& json)
-	: message(json["message"].toObject())
+ErrorResponse::ErrorResponse(const QJsonObject& json)
+	: error(json["error"].toString())
 {
-	assert(json[typeField].toString() == sendMessageRequest);
+	assert(json[typeField].toString() == errorResponse);
 }
 
-QJsonObject SendMessageRequest::toJson() const
+QJsonObject Common::ErrorResponse::toJson() const
 {
 	return 
 	{
-		{ typeField, sendMessageRequest },
-		{ "message", message.toJson() }
+		{ typeField, errorResponse },
+		{ "error", error }
 	};
 }
 
-SendMessageResponse::SendMessageResponse(const SendMessageRequest& request, State state)
-	: message(request.message)
+SendMessagesRequest::SendMessagesRequest(const std::vector<Message>& messages)
+	: messages(messages)
+{
+
+}
+
+SendMessagesRequest::SendMessagesRequest(const QJsonObject& json)
+	: messages()
+{
+	assert(json[typeField].toString() == sendMessagesRequest);
+	
+	assert(json["messages"].isArray());
+	QJsonArray jsonArray = json["messages"].toArray();
+
+	messages.resize(jsonArray.size());
+	std::transform(jsonArray.constBegin(), jsonArray.constEnd(), messages.begin(),
+		[](const QJsonValue& value)
+		{
+			assert(value.isObject());
+			return Message(value.toObject());
+		});
+}
+
+QJsonObject SendMessagesRequest::toJson() const
+{
+	QJsonArray array;
+	std::transform(messages.cbegin(), messages.cend(), std::back_inserter(array),
+		[](const Message& message)
+		{
+			return message.toJson();
+		});
+
+	return 
+	{
+		{ typeField, sendMessagesRequest },
+		{ "messages", array }
+	};
+}
+
+SendMessagesResponse::SendMessagesResponse(const SendMessagesRequest& request, State state)
+	: messages(request.messages)
 	, state(state)
 {
 
 }
 
-SendMessageResponse::SendMessageResponse(const QJsonObject& json)
-	: message(json["message"].toObject())
-	, state(static_cast<State>(json["state"].toInt()))
+SendMessagesResponse::SendMessagesResponse(const QJsonObject& json)
+	: state(static_cast<State>(json["state"].toInt()))
 {
-	assert(json[typeField].toString() == sendMessageResponse);
+	assert(json["messages"].isArray());
+	QJsonArray jsonArray = json["messages"].toArray();
+
+	messages.resize(jsonArray.size());
+	std::transform(jsonArray.constBegin(), jsonArray.constEnd(), messages.begin(),
+		[](const QJsonValue& value)
+	{
+		assert(value.isObject());
+		return Message(value.toObject());
+	});
+
+	assert(json[typeField].toString() == sendMessagesResponse);
 	assert(state < State::StatesCount);
 }
 
-QJsonObject SendMessageResponse::toJson() const
+QJsonObject SendMessagesResponse::toJson() const
 {
+	QJsonArray array;
+	std::transform(messages.cbegin(), messages.cend(), std::back_inserter(array),
+		[](const Message& message)
+	{
+		return message.toJson();
+	});
+
 	return 
 	{
-		{ typeField, sendMessageResponse },
+		{ typeField, sendMessagesResponse },
 		{ "state", static_cast<int>(state) },
-		{ "message", message.toJson() }
+		{ "messages", array }
 	};
 }
 
-GetMessagesRequest::GetMessagesRequest(int id1, int id2, int count)
+GetMessagesRequest::GetMessagesRequest(int id1, int id2, int count, int from)
 	: id1(id1)
 	, id2(id2)
 	, count(count)
+	, from(from)
 {
 }
 
@@ -77,6 +132,7 @@ GetMessagesRequest::GetMessagesRequest(const QJsonObject& json)
 	: id1(json["id1"].toInt())
 	, id2(json["id2"].toInt())
 	, count(json["count"].toInt())
+	, from(json["from"].toInt())
 {
 	assert(json[typeField].toString() == getMessagesRequest);
 }
@@ -88,7 +144,8 @@ QJsonObject GetMessagesRequest::toJson() const
 		{ typeField, getMessagesRequest },
 		{ "id1", id1 },
 		{ "id2", id2 },
-		{ "count", count }
+		{ "count", count },
+		{ "from", from }
 	};
 }
 
@@ -132,7 +189,7 @@ QJsonArray GetMessagesResponse::messagesToJson() const
 {
 	QJsonArray json;
 
-	std::transform(messages.begin(), messages.end(), std::back_inserter(json), 
+	std::transform(messages.cbegin(), messages.cend(), std::back_inserter(json), 
 		[](const Message& message)
 		{
 			return message.toJson();
