@@ -46,3 +46,4 @@ public:
 }
 
 Q_DECLARE_METATYPE(Common::Message);
+Q_DECLARE_METATYPE(Common::State);

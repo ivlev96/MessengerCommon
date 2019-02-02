@@ -18,7 +18,7 @@ Person::Person(const QJsonObject& json)
 	: id(json["id"].toInt())
 	, firstName(json["firstName"].toString())
 	, lastName(json["lastName"].toString())
-	, avatarUrl(json["avatar"].toString())
+	, avatarUrl(json["avatarUrl"].toString())
 {
 }
 
@@ -34,7 +34,7 @@ QJsonObject Person::toJson() const
 		{ "id", id },
 		{ "firstName", firstName },
 		{ "lastName", lastName },
-		{ "avatarUrl", avatarUrl.toString() }
+		{ "avatarUrl", avatarUrl }
 	};
 }
 

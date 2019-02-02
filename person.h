@@ -33,7 +33,7 @@ public:
 	int id;
 	QString firstName;
 	QString lastName;
-	QUrl avatarUrl;
+	QString avatarUrl;
 };
 
 }
