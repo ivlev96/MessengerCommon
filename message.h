@@ -9,26 +9,25 @@
 
 namespace Common
 {
-	
-enum class State : quint8
-{
-	NotSent,
-	Sent,
-	Delivered,
-	Read,
-	StatesCount
-};
 
 struct Message
 {
 public:
+	enum class State : quint8
+	{
+		NotSent,
+		Sent,
+		Delivered,
+		Read,
+		StatesCount
+	};
 	Message() = default;
 	Message(const Message&) = default;
 	Message& operator = (const Message&) = default;
 
 	Message(
-		const Person& from,
-		const Person& to,
+		const PersonIdType& from,
+		const PersonIdType& to,
 		const QDateTime& dateTime,
 		const QString& text);
 
@@ -37,8 +36,8 @@ public:
 	QJsonObject toJson() const;
 
 public:
-	Person from;
-	Person to;
+	PersonIdType from;
+	PersonIdType to;
 	QDateTime dateTime;
 	QString text;
 };
@@ -46,4 +45,4 @@ public:
 }
 
 Q_DECLARE_METATYPE(Common::Message);
-Q_DECLARE_METATYPE(Common::State);
+Q_DECLARE_METATYPE(Common::Message::State);

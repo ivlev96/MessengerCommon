@@ -7,12 +7,13 @@
 
 namespace Common
 {
+typedef int PersonIdType;
 
 struct Person
 {
 public:
 	Person(
-		int id,
+		PersonIdType id,
 		const QString& firstName,
 		const QString& lastName,
 		const QString& avatarUrl);
@@ -30,7 +31,7 @@ public:
 	bool operator!=(const Person& other) const;
 	
 public:
-	int id;
+	PersonIdType id;
 	QString firstName;
 	QString lastName;
 	QString avatarUrl;

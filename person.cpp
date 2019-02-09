@@ -3,7 +3,7 @@
 using namespace Common;
 
 Person::Person(
-	int id,
+	PersonIdType id,
 	const QString& firstName,
 	const QString& lastName,
 	const QString& avatarUrl)

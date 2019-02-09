@@ -4,8 +4,8 @@
 using namespace Common;
 
 Message::Message(
-	const Person& from,
-	const Person& to,
+	const PersonIdType& from,
+	const PersonIdType& to,
 	const QDateTime& dateTime,
 	const QString& text)
 	: from(from)
@@ -16,8 +16,8 @@ Message::Message(
 }
 
 Message::Message(const QJsonObject& json)
-	: from(json["from"].toObject())
-	, to(json["to"].toObject())
+	: from(json["from"].toInt())
+	, to(json["to"].toInt())
 	, dateTime(QDateTime::fromString(json["dateTime"].toString(), Common::dateTimeFormat))
 	, text(json["text"].toString())
 {
@@ -28,8 +28,8 @@ QJsonObject Message::toJson() const
 {
 	return 
 	{
-		{ "from", from.toJson() },
-		{ "to", to.toJson() },
+		{ "from", from },
+		{ "to", to },
 		{ "dateTime", dateTime.toString(Common::dateTimeFormat) },
 		{ "text", text }
 	};

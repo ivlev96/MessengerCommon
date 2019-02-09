@@ -11,6 +11,7 @@
 
 namespace Common
 {
+
 extern QString errorResponse;
 
 extern QString sendMessagesRequest;
@@ -18,6 +19,9 @@ extern QString sendMessagesResponse;
 
 extern QString getMessagesRequest;
 extern QString getMessagesResponse;
+
+extern QString getPersonsRequest;
+extern QString getPersonsResponse;
 
 extern QString authorizationRequest;
 extern QString authorizationResponse;
@@ -43,6 +47,7 @@ struct ErrorResponse
 public:
 	QString error;
 };
+
 
 struct SendMessagesRequest
 {
@@ -70,7 +75,7 @@ public:
 	SendMessagesResponse() = delete;
 	SendMessagesResponse& operator = (const SendMessagesResponse&) = delete;
 
-	SendMessagesResponse(const SendMessagesRequest& request, State state);
+	SendMessagesResponse(const SendMessagesRequest& request, Message::State state);
 
 	explicit SendMessagesResponse(const QJsonObject& json);
 
@@ -78,21 +83,21 @@ public:
 
 public:
 	std::vector<Message> messages;
-	State state;
+	Message::State state;
 };
 
 
 struct GetMessagesRequest
 {
 public:
-	GetMessagesRequest(int id1, int id2, int count, int from = 0);
+	GetMessagesRequest(PersonIdType id1, PersonIdType id2, int count, int from = 0);
 	explicit GetMessagesRequest(const QJsonObject& json);
 
 	QJsonObject toJson() const;
 
 public:
-	int id1;
-	int id2;
+	PersonIdType id1;
+	PersonIdType id2;
 	int count;
 	int from;
 };
@@ -100,7 +105,7 @@ public:
 struct GetMessagesResponse
 {
 public:
-	GetMessagesResponse(int id1, int id2, const std::vector<Message>& messages);
+	GetMessagesResponse(PersonIdType id1, PersonIdType id2, const std::vector<Message>& messages);
 	explicit GetMessagesResponse(const QJsonObject& json);
 
 	QJsonObject toJson() const;
@@ -109,11 +114,37 @@ private:
 	QJsonArray messagesToJson() const;
 
 public:
-	int id1;
-	int id2;
+	PersonIdType id1;
+	PersonIdType id2;
 	std::vector<Message> messages;
 };
 
 
+struct GetPersonsRequest
+{
+public:
+	GetPersonsRequest(PersonIdType friendsOf);
+	explicit GetPersonsRequest(const QJsonObject& json);
+
+	QJsonObject toJson() const;
+
+public:
+	PersonIdType friendsOf;
+};
+
+struct GetPersonsResponse
+{
+public:
+	GetPersonsResponse(const std::vector<Person>& persons);
+	explicit GetPersonsResponse(const QJsonObject& json);
+
+	QJsonObject toJson() const;
+
+private:
+	QJsonArray personsToJson() const;
+
+public:
+	std::vector<Person> persons;
+};
 
 }

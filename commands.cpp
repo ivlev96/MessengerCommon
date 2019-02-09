@@ -9,6 +9,9 @@ QString Common::sendMessagesResponse("sendMessagesResponse");
 QString Common::getMessagesRequest("getMessagesRequest");
 QString Common::getMessagesResponse("getMessagesResponse");
 
+QString Common::getPersonsRequest("getPersonsRequest");
+QString Common::getPersonsResponse("getPersonsResponse");
+
 QString Common::authorizationRequest("authorizationResponse");
 QString Common::authorizationResponse("authorizationRequest");
 
@@ -78,7 +81,7 @@ QJsonObject SendMessagesRequest::toJson() const
 	};
 }
 
-SendMessagesResponse::SendMessagesResponse(const SendMessagesRequest& request, State state)
+SendMessagesResponse::SendMessagesResponse(const SendMessagesRequest& request, Message::State state)
 	: messages(request.messages)
 	, state(state)
 {
@@ -86,7 +89,7 @@ SendMessagesResponse::SendMessagesResponse(const SendMessagesRequest& request, S
 }
 
 SendMessagesResponse::SendMessagesResponse(const QJsonObject& json)
-	: state(static_cast<State>(json["state"].toInt()))
+	: state(static_cast<Message::State>(json["state"].toInt()))
 {
 	assert(json["messages"].isArray());
 	QJsonArray jsonArray = json["messages"].toArray();
@@ -100,7 +103,7 @@ SendMessagesResponse::SendMessagesResponse(const QJsonObject& json)
 	});
 
 	assert(json[typeField].toString() == sendMessagesResponse);
-	assert(state < State::StatesCount);
+	assert(state < Message::State::StatesCount);
 }
 
 QJsonObject SendMessagesResponse::toJson() const
@@ -120,7 +123,7 @@ QJsonObject SendMessagesResponse::toJson() const
 	};
 }
 
-GetMessagesRequest::GetMessagesRequest(int id1, int id2, int count, int from)
+GetMessagesRequest::GetMessagesRequest(PersonIdType id1, PersonIdType id2, int count, int from)
 	: id1(id1)
 	, id2(id2)
 	, count(count)
@@ -149,7 +152,7 @@ QJsonObject GetMessagesRequest::toJson() const
 	};
 }
 
-GetMessagesResponse::GetMessagesResponse(int id1, int id2, const std::vector<Message>& messages)
+GetMessagesResponse::GetMessagesResponse(PersonIdType id1, PersonIdType id2, const std::vector<Message>& messages)
 	: id1(id1)
 	, id2(id2)
 	, messages(messages)
@@ -196,4 +199,47 @@ QJsonArray GetMessagesResponse::messagesToJson() const
 		});
 
 	return json;
+}
+
+GetPersonsRequest::GetPersonsRequest(PersonIdType friendsOf)
+	: friendsOf(friendsOf)
+{
+
+}
+
+GetPersonsRequest::GetPersonsRequest(const QJsonObject& json)
+	: friendsOf(json["friendsOf"].toInt())
+{
+	assert(json[typeField].toString() == getPersonsRequest);
+}
+
+QJsonObject GetPersonsRequest::toJson() const
+{
+	return 
+	{
+		{ typeField, getPersonsRequest },
+		{ "friendsOf", friendsOf }
+	};
+}
+
+GetPersonsResponse::GetPersonsResponse(const std::vector<Person>& persons)
+	: persons(persons)
+{
+}
+
+GetPersonsResponse::GetPersonsResponse(const QJsonObject& json)
+{
+	assert(json[typeField].toString() == getMessagesResponse);
+
+	assert(json["persons"].isArray());
+
+	QJsonArray personsInJson = json["persons"].toArray();
+	persons.resize(personsInJson.size());
+
+	std::transform(personsInJson.constBegin(), personsInJson.constEnd(), persons.begin(),
+		[](const QJsonValue& value)
+	{
+		assert(value.isObject());
+		return Person(value.toObject());
+	});
 }
