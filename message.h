@@ -6,9 +6,25 @@
 #include <QUrl>
 #include <QJsonObject>
 #include <QMetaType>
+#include <optional>
 
 namespace Common
 {
+typedef int MessageIdType;
+
+class MessageIdGenerator //internal ids are unique only in current session
+{
+public:
+	static MessageIdType next();
+
+private:
+	MessageIdGenerator();
+	MessageIdGenerator(const MessageIdGenerator&) = delete;
+	MessageIdGenerator& operator=(const MessageIdGenerator&) = delete;
+
+private:
+	MessageIdType internalId;
+};
 
 struct Message
 {
@@ -21,6 +37,7 @@ public:
 		Read,
 		StatesCount
 	};
+
 	Message() = default;
 	Message(const Message&) = default;
 	Message& operator = (const Message&) = default;
@@ -29,7 +46,9 @@ public:
 		const PersonIdType& from,
 		const PersonIdType& to,
 		const QDateTime& dateTime,
-		const QString& text);
+		const QString& text,
+		const std::optional<MessageIdType>& id = {},
+		Message::State state = State::NotSent);
 
 	explicit Message(const QJsonObject& json);
 
@@ -40,6 +59,9 @@ public:
 	PersonIdType to;
 	QDateTime dateTime;
 	QString text;
+	std::optional<MessageIdType> internalId;
+	std::optional<MessageIdType> id;
+	State state;
 };
 
 }

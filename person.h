@@ -39,4 +39,5 @@ public:
 
 }
 
+Q_DECLARE_METATYPE(Common::PersonIdType);
 Q_DECLARE_METATYPE(Common::Person);

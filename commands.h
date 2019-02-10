@@ -90,7 +90,7 @@ public:
 struct GetMessagesRequest
 {
 public:
-	GetMessagesRequest(PersonIdType id1, PersonIdType id2, int count, int from = 0);
+	GetMessagesRequest(PersonIdType id1, PersonIdType id2, bool isNew, int count, int from = 0);
 	explicit GetMessagesRequest(const QJsonObject& json);
 
 	QJsonObject toJson() const;
@@ -98,6 +98,7 @@ public:
 public:
 	PersonIdType id1;
 	PersonIdType id2;
+	bool isNew;
 	int count;
 	int from;
 };
@@ -105,7 +106,7 @@ public:
 struct GetMessagesResponse
 {
 public:
-	GetMessagesResponse(PersonIdType id1, PersonIdType id2, const std::vector<Message>& messages);
+	GetMessagesResponse(PersonIdType id1, PersonIdType id2, bool isNew, const std::vector<Message>& messages);
 	explicit GetMessagesResponse(const QJsonObject& json);
 
 	QJsonObject toJson() const;
@@ -116,6 +117,7 @@ private:
 public:
 	PersonIdType id1;
 	PersonIdType id2;
+	bool isNew;
 	std::vector<Message> messages;
 };
 

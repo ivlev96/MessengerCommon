@@ -123,9 +123,10 @@ QJsonObject SendMessagesResponse::toJson() const
 	};
 }
 
-GetMessagesRequest::GetMessagesRequest(PersonIdType id1, PersonIdType id2, int count, int from)
+GetMessagesRequest::GetMessagesRequest(PersonIdType id1, PersonIdType id2, bool isNew, int count, int from)
 	: id1(id1)
 	, id2(id2)
+	, isNew(isNew)
 	, count(count)
 	, from(from)
 {
@@ -134,6 +135,7 @@ GetMessagesRequest::GetMessagesRequest(PersonIdType id1, PersonIdType id2, int c
 GetMessagesRequest::GetMessagesRequest(const QJsonObject& json)
 	: id1(json["id1"].toInt())
 	, id2(json["id2"].toInt())
+	, isNew(json["isNew"].toBool())
 	, count(json["count"].toInt())
 	, from(json["from"].toInt())
 {
@@ -147,14 +149,16 @@ QJsonObject GetMessagesRequest::toJson() const
 		{ typeField, getMessagesRequest },
 		{ "id1", id1 },
 		{ "id2", id2 },
+		{ "isNew", isNew },
 		{ "count", count },
 		{ "from", from }
 	};
 }
 
-GetMessagesResponse::GetMessagesResponse(PersonIdType id1, PersonIdType id2, const std::vector<Message>& messages)
+GetMessagesResponse::GetMessagesResponse(PersonIdType id1, PersonIdType id2, bool isNew, const std::vector<Message>& messages)
 	: id1(id1)
 	, id2(id2)
+	, isNew(isNew)
 	, messages(messages)
 {
 }
@@ -162,6 +166,7 @@ GetMessagesResponse::GetMessagesResponse(PersonIdType id1, PersonIdType id2, con
 GetMessagesResponse::GetMessagesResponse(const QJsonObject& json)
 	: id1(json["id1"].toInt())
 	, id2(json["id2"].toInt())
+	, isNew(json["isNew"].toBool())
 {
 	assert(json[typeField].toString() == getMessagesResponse);
 	assert(json["messages"].isArray());
@@ -184,6 +189,7 @@ QJsonObject GetMessagesResponse::toJson() const
 		{ typeField, getMessagesResponse },
 		{ "id1", id1 },
 		{ "id2", id2 },
+		{ "isNew", isNew },
 		{ "messages", messagesToJson() },
 	};
 }
