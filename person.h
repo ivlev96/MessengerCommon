@@ -1,10 +1,5 @@
 #pragma once
 
-#include <QJsonObject>
-#include <QString>
-#include <QUrl>
-#include <QMetaType>
-
 namespace Common
 {
 typedef int PersonIdType;

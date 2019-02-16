@@ -1,13 +1,6 @@
 #pragma once
 #include "person.h"
 
-#include <QDateTime>
-#include <QString>
-#include <QUrl>
-#include <QJsonObject>
-#include <QMetaType>
-#include <optional>
-
 namespace Common
 {
 typedef int MessageIdType;

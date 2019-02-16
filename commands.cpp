@@ -1,7 +1,9 @@
 #include "commands.h"
-#include <QJsonArray>
 
 QString Common::errorResponse("error");
+
+QString Common::logInRequest("logInRequest");
+QString Common::logInResponse("logInResponse");
 
 QString Common::sendMessagesRequest("sendMessagesRequest");
 QString Common::sendMessagesResponse("sendMessagesResponse");
@@ -39,6 +41,68 @@ QJsonObject Common::ErrorResponse::toJson() const
 	{
 		{ typeField, errorResponse },
 		{ "error", error }
+	};
+}
+
+LogInRequest::LogInRequest(const QString& login, const QString& password)
+	: login(login)
+	, password(password)
+{
+
+}
+
+LogInRequest::LogInRequest(const QJsonObject& json)
+	: login(json["login"].toString())
+	, password(json["password"].toString())
+{
+	assert(json[typeField].toString() == logInRequest);
+}
+
+QJsonObject LogInRequest::toJson() const
+{
+	return 
+	{
+		{ typeField, logInRequest },
+		{ "login", login },
+		{ "password", password }
+	};
+}
+
+LogInResponse::LogInResponse(const std::optional<Person>& person)
+	: person(person)
+	, ok(person.has_value())
+{
+}
+
+LogInResponse::LogInResponse(const QJsonObject& json)
+	: ok(json["ok"].toBool())
+	, person()
+{
+	assert(json[typeField].toString() == logInResponse);
+	assert(ok == !json["person"].isNull());
+
+	if (ok)
+	{
+		person = Person(json["person"].toObject());
+	}
+}
+
+QJsonObject LogInResponse::toJson() const
+{
+	if (ok)
+	{
+		return
+		{
+			{ typeField, logInRequest },
+			{ "ok", ok },
+			{ "person", person->toJson() }
+		};
+	}
+
+	return
+	{
+		{ typeField, logInRequest },
+		{ "ok", ok }
 	};
 }
 

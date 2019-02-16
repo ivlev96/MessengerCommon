@@ -3,16 +3,13 @@
 #include "person.h"
 #include "message.h"
 
-#include <QDateTime>
-#include <QString>
-#include <QUrl>
-#include <QJsonObject>
-#include <vector>
-
 namespace Common
 {
 
 extern QString errorResponse;
+
+extern QString logInRequest;
+extern QString logInResponse;
 
 extern QString sendMessagesRequest;
 extern QString sendMessagesResponse;
@@ -49,14 +46,36 @@ public:
 };
 
 
+struct LogInRequest
+{
+public:
+	LogInRequest(const QString& login, const QString& password);
+	explicit LogInRequest(const QJsonObject& json);
+
+	QJsonObject toJson() const;
+
+public:
+	QString login;
+	QString password;
+};
+
+struct LogInResponse
+{
+public:
+	LogInResponse(const std::optional<Person>& person);
+	explicit LogInResponse(const QJsonObject& json);
+
+	QJsonObject toJson() const;
+
+public:
+	bool ok;
+	std::optional<Person> person;
+};
+
+
 struct SendMessagesRequest
 {
 public:
-	SendMessagesRequest(const SendMessagesRequest&) = default;
-
-	SendMessagesRequest() = delete;
-	SendMessagesRequest& operator = (const SendMessagesRequest&) = delete;
-
 	SendMessagesRequest(const std::vector<Message>& messages);
 
 	explicit SendMessagesRequest(const QJsonObject& json);
