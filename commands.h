@@ -8,6 +8,9 @@ namespace Common
 
 extern QString errorResponse;
 
+extern QString registrationRequest;
+extern QString registrationResponse;
+
 extern QString logInRequest;
 extern QString logInResponse;
 
@@ -19,12 +22,6 @@ extern QString getMessagesResponse;
 
 extern QString getPersonsRequest;
 extern QString getPersonsResponse;
-
-extern QString authorizationRequest;
-extern QString authorizationResponse;
-
-extern QString registrationRequest;
-extern QString registrationResponse;
 
 extern QString typeField;
 
@@ -43,6 +40,43 @@ struct ErrorResponse
 
 public:
 	QString error;
+};
+
+
+struct RegistrationRequest
+{
+public:
+	RegistrationRequest(
+		const QString& firstName, 
+		const QString& lastName, 
+		const QString& avatarUrl, 
+		const QString& login, 
+		const QString& password);
+
+	explicit RegistrationRequest(const QJsonObject& json);
+
+	QJsonObject toJson() const;
+
+public:
+	QString firstName;
+	QString lastName;
+	QString avatarUrl;
+
+	QString login;
+	QString password;
+};
+
+struct RegistrationResponse
+{
+public:
+	RegistrationResponse(const std::optional<Person>& person);
+	explicit RegistrationResponse(const QJsonObject& json);
+
+	QJsonObject toJson() const;
+
+public:
+	bool ok;
+	std::optional<Person> person;
 };
 
 
@@ -94,7 +128,7 @@ public:
 	SendMessagesResponse() = delete;
 	SendMessagesResponse& operator = (const SendMessagesResponse&) = delete;
 
-	SendMessagesResponse(const SendMessagesRequest& request, Message::State state);
+	SendMessagesResponse(const std::vector<Message>& messages);
 
 	explicit SendMessagesResponse(const QJsonObject& json);
 
@@ -102,14 +136,13 @@ public:
 
 public:
 	std::vector<Message> messages;
-	Message::State state;
 };
 
 
 struct GetMessagesRequest
 {
 public:
-	GetMessagesRequest(PersonIdType id1, PersonIdType id2, bool isNew, int count, int from = 0);
+	GetMessagesRequest(PersonIdType id1, PersonIdType id2, bool isNew, int count, std::optional<MessageIdType> before = {});
 	explicit GetMessagesRequest(const QJsonObject& json);
 
 	QJsonObject toJson() const;
@@ -119,13 +152,13 @@ public:
 	PersonIdType id2;
 	bool isNew;
 	int count;
-	int from;
+	std::optional<MessageIdType> before;
 };
 
 struct GetMessagesResponse
 {
 public:
-	GetMessagesResponse(PersonIdType id1, PersonIdType id2, bool isNew, const std::vector<Message>& messages);
+	GetMessagesResponse(PersonIdType id1, PersonIdType id2, bool isNew, const std::vector<Message>& messages, std::optional<MessageIdType> before = {});
 	explicit GetMessagesResponse(const QJsonObject& json);
 
 	QJsonObject toJson() const;
@@ -138,6 +171,7 @@ public:
 	PersonIdType id2;
 	bool isNew;
 	std::vector<Message> messages;
+	std::optional<MessageIdType> before;
 };
 
 

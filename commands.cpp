@@ -2,6 +2,9 @@
 
 QString Common::errorResponse("error");
 
+QString Common::registrationRequest("registrationRequest");
+QString Common::registrationResponse("registrationResponse");
+
 QString Common::logInRequest("logInRequest");
 QString Common::logInResponse("logInResponse");
 
@@ -13,12 +16,6 @@ QString Common::getMessagesResponse("getMessagesResponse");
 
 QString Common::getPersonsRequest("getPersonsRequest");
 QString Common::getPersonsResponse("getPersonsResponse");
-
-QString Common::authorizationRequest("authorizationResponse");
-QString Common::authorizationResponse("authorizationRequest");
-
-QString Common::registrationRequest("registrationRequest");
-QString Common::registrationResponse("registrationResponse");
 
 QString Common::typeField("_type");
 
@@ -41,6 +38,74 @@ QJsonObject Common::ErrorResponse::toJson() const
 	{
 		{ typeField, errorResponse },
 		{ "error", error }
+	};
+}
+
+RegistrationRequest::RegistrationRequest(
+	const QString& firstName,
+	const QString& lastName,
+	const QString& avatarUrl,
+	const QString& login,
+	const QString& password)
+	: firstName(firstName)
+	, lastName(lastName)
+	, avatarUrl(avatarUrl)
+	, login(login)
+	, password(password)
+{
+}
+
+RegistrationRequest::RegistrationRequest(const QJsonObject& json)
+	: firstName(json["firstName"].toString())
+	, lastName(json["lastName"].toString())
+	, avatarUrl(json["avatarUrl"].toString())
+	, login(json["login"].toString())
+	, password(json["password"].toString())
+{
+	assert(json[typeField].toString() == registrationRequest);
+}
+
+QJsonObject RegistrationRequest::toJson() const
+{
+	return 
+	{
+		{ typeField, registrationRequest },
+		{ "firstName", firstName },
+		{ "lastName", lastName },
+		{ "avatarUrl", avatarUrl },
+		{ "login", login },
+		{ "password", password },
+	};
+}
+
+RegistrationResponse::RegistrationResponse(const std::optional<Person>& person)
+	: person(person)
+	, ok(person.has_value())
+{
+}
+
+RegistrationResponse::RegistrationResponse(const QJsonObject& json)
+	: ok(json["ok"].toBool())
+	, person()
+{
+	assert(json[typeField].toString() == registrationResponse);
+	assert(ok != json["person"].isNull());
+
+	if (ok)
+	{
+		person = Person(json["person"].toObject());
+	}
+}
+
+QJsonObject RegistrationResponse::toJson() const
+{
+	const QJsonValue personValue = ok ? person->toJson() : QJsonValue();
+
+	return
+	{
+		{ typeField, registrationResponse },
+		{ "ok", ok },
+		{ "person", personValue }
 	};
 }
 
@@ -79,7 +144,7 @@ LogInResponse::LogInResponse(const QJsonObject& json)
 	, person()
 {
 	assert(json[typeField].toString() == logInResponse);
-	assert(ok == !json["person"].isNull());
+	assert(ok != json["person"].isNull());
 
 	if (ok)
 	{
@@ -89,20 +154,13 @@ LogInResponse::LogInResponse(const QJsonObject& json)
 
 QJsonObject LogInResponse::toJson() const
 {
-	if (ok)
-	{
-		return
-		{
-			{ typeField, logInRequest },
-			{ "ok", ok },
-			{ "person", person->toJson() }
-		};
-	}
+	const QJsonValue personValue = ok ? person->toJson() : QJsonValue();
 
 	return
 	{
-		{ typeField, logInRequest },
-		{ "ok", ok }
+		{ typeField, logInResponse },
+		{ "ok", ok },
+		{ "person", personValue }
 	};
 }
 
@@ -145,16 +203,16 @@ QJsonObject SendMessagesRequest::toJson() const
 	};
 }
 
-SendMessagesResponse::SendMessagesResponse(const SendMessagesRequest& request, Message::State state)
-	: messages(request.messages)
-	, state(state)
+SendMessagesResponse::SendMessagesResponse(const std::vector<Message>& messages)
+	: messages(messages)
 {
 
 }
 
 SendMessagesResponse::SendMessagesResponse(const QJsonObject& json)
-	: state(static_cast<Message::State>(json["state"].toInt()))
 {
+	assert(json[typeField].toString() == sendMessagesResponse);
+
 	assert(json["messages"].isArray());
 	QJsonArray jsonArray = json["messages"].toArray();
 
@@ -165,9 +223,6 @@ SendMessagesResponse::SendMessagesResponse(const QJsonObject& json)
 		assert(value.isObject());
 		return Message(value.toObject());
 	});
-
-	assert(json[typeField].toString() == sendMessagesResponse);
-	assert(state < Message::State::StatesCount);
 }
 
 QJsonObject SendMessagesResponse::toJson() const
@@ -182,18 +237,18 @@ QJsonObject SendMessagesResponse::toJson() const
 	return 
 	{
 		{ typeField, sendMessagesResponse },
-		{ "state", static_cast<int>(state) },
 		{ "messages", array }
 	};
 }
 
-GetMessagesRequest::GetMessagesRequest(PersonIdType id1, PersonIdType id2, bool isNew, int count, int from)
+GetMessagesRequest::GetMessagesRequest(PersonIdType id1, PersonIdType id2, bool isNew, int count, std::optional<MessageIdType> before)
 	: id1(id1)
 	, id2(id2)
 	, isNew(isNew)
 	, count(count)
-	, from(from)
+	, before(before)
 {
+	assert(isNew != before.has_value());
 }
 
 GetMessagesRequest::GetMessagesRequest(const QJsonObject& json)
@@ -201,13 +256,20 @@ GetMessagesRequest::GetMessagesRequest(const QJsonObject& json)
 	, id2(json["id2"].toInt())
 	, isNew(json["isNew"].toBool())
 	, count(json["count"].toInt())
-	, from(json["from"].toInt())
+	, before()
 {
 	assert(json[typeField].toString() == getMessagesRequest);
+	assert(json["before"].isNull() != isNew);
+
+	if (!isNew)
+	{
+		before = json["before"].toInt();
+	}
 }
 
 QJsonObject GetMessagesRequest::toJson() const
 {
+	const QJsonValue beforeValue = isNew ? QJsonValue() : *before;
 	return 
 	{
 		{ typeField, getMessagesRequest },
@@ -215,16 +277,18 @@ QJsonObject GetMessagesRequest::toJson() const
 		{ "id2", id2 },
 		{ "isNew", isNew },
 		{ "count", count },
-		{ "from", from }
+		{ "before", beforeValue }
 	};
 }
 
-GetMessagesResponse::GetMessagesResponse(PersonIdType id1, PersonIdType id2, bool isNew, const std::vector<Message>& messages)
+GetMessagesResponse::GetMessagesResponse(PersonIdType id1, PersonIdType id2, bool isNew, const std::vector<Message>& messages, std::optional<MessageIdType> before)
 	: id1(id1)
 	, id2(id2)
 	, isNew(isNew)
 	, messages(messages)
+	, before(before)
 {
+	assert(isNew != before.has_value());
 }
 
 GetMessagesResponse::GetMessagesResponse(const QJsonObject& json)
@@ -234,6 +298,12 @@ GetMessagesResponse::GetMessagesResponse(const QJsonObject& json)
 {
 	assert(json[typeField].toString() == getMessagesResponse);
 	assert(json["messages"].isArray());
+	assert(json["before"].isNull() != isNew);
+
+	if (!isNew)
+	{
+		before = json["before"].toInt();
+	}
 
 	QJsonArray messagesInJson = json["messages"].toArray();
 	messages.resize(messagesInJson.size());
