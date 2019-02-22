@@ -14,6 +14,9 @@ extern QString registrationResponse;
 extern QString logInRequest;
 extern QString logInResponse;
 
+extern QString getLastMessagesRequest;
+extern QString getLastMessagesResponse;
+
 extern QString sendMessagesRequest;
 extern QString sendMessagesResponse;
 
@@ -106,6 +109,34 @@ public:
 	std::optional<Person> person;
 };
 
+
+struct GetLastMessagesRequest
+{
+public:
+	GetLastMessagesRequest(PersonIdType id, int count, bool isNew);
+	explicit GetLastMessagesRequest(const QJsonObject& json);
+
+	QJsonObject toJson() const;
+
+public:
+	PersonIdType id;
+	int count;
+	bool isNew;
+};
+
+struct GetLastMessagesResponse
+{
+public:
+	GetLastMessagesResponse(PersonIdType id, bool isNew, const std::vector<std::pair<Person, Message>>& messages);
+	explicit GetLastMessagesResponse(const QJsonObject& json);
+
+	QJsonObject toJson() const;
+
+public:
+	PersonIdType id;
+	bool isNew;
+	std::vector<std::pair<Person, Message>> messages;
+};
 
 struct SendMessagesRequest
 {

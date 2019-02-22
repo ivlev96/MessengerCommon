@@ -8,6 +8,9 @@ QString Common::registrationResponse("registrationResponse");
 QString Common::logInRequest("logInRequest");
 QString Common::logInResponse("logInResponse");
 
+QString Common::getLastMessagesRequest("getLastMessagesRequest");
+QString Common::getLastMessagesResponse("getLastMessagesResponse");
+
 QString Common::sendMessagesRequest("sendMessagesRequest");
 QString Common::sendMessagesResponse("sendMessagesResponse");
 
@@ -161,6 +164,86 @@ QJsonObject LogInResponse::toJson() const
 		{ typeField, logInResponse },
 		{ "ok", ok },
 		{ "person", personValue }
+	};
+}
+
+GetLastMessagesRequest::GetLastMessagesRequest(PersonIdType id, int count, bool isNew)
+	: id(id)
+	, count(count)
+	, isNew(isNew)
+{
+	assert(count > 0);
+}
+
+GetLastMessagesRequest::GetLastMessagesRequest(const QJsonObject& json)
+	: id(json["id"].toInt())
+	, count(json["count"].toInt())
+	, isNew(json["isNew"].toBool())
+{
+	assert(json[typeField].toString() == getLastMessagesRequest);
+}
+
+QJsonObject Common::GetLastMessagesRequest::toJson() const
+{
+	return
+	{
+		{ typeField, getMessagesRequest },
+		{ "id", id },
+		{ "count", count },
+		{ "isNew", isNew }
+	};
+}
+
+GetLastMessagesResponse::GetLastMessagesResponse(PersonIdType id, bool isNew, const std::vector<std::pair<Person, Message>>& messages)
+	: id(id)
+	, isNew(isNew)
+	, messages(messages)
+{
+}
+
+GetLastMessagesResponse::GetLastMessagesResponse(const QJsonObject& json)
+	: id(json["id"].toInt())
+	, isNew(json["isNew"].toBool())
+{
+	assert(json[typeField].toString() == getLastMessagesResponse);
+
+	const QJsonValue messagesValue = json["messages"];
+	assert(messagesValue.isArray());
+
+	const QJsonArray messagesArray = messagesValue.toArray();
+
+	messages.resize(messagesArray.size());
+	std::transform(messagesArray.constBegin(), messagesArray.constEnd(), messages.begin(),
+		[](const QJsonValue& value)
+	{
+		const QJsonObject json = value.toObject();
+		return std::make_pair<Person, Message>(
+			Person(json["person"].toObject()),
+			Message(json["message"].toObject()));
+	});
+}
+
+QJsonObject GetLastMessagesResponse::toJson() const
+{
+	QJsonArray messagesJson;
+
+	std::transform(messages.cbegin(), messages.cend(), std::back_inserter(messagesJson),
+		[](const auto& pair) -> QJsonObject
+	{
+		const auto[person, message] = pair;
+		return
+		{
+			{ "person", person.toJson() },
+			{ "message", message.toJson() }
+		};
+	});
+
+	return
+	{
+		{ typeField, getLastMessagesResponse },
+		{ "id", id },
+		{ "isNew", isNew },
+		{ "messages", messagesJson }
 	};
 }
 
