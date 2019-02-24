@@ -17,8 +17,7 @@ QString Common::sendMessagesResponse("sendMessagesResponse");
 QString Common::getMessagesRequest("getMessagesRequest");
 QString Common::getMessagesResponse("getMessagesResponse");
 
-QString Common::getPersonsRequest("getPersonsRequest");
-QString Common::getPersonsResponse("getPersonsResponse");
+QString Common::newMessageCommand("newMessageCommand");
 
 QString Common::typeField("_type");
 
@@ -422,45 +421,25 @@ QJsonObject GetMessagesResponse::toJson() const
 	};
 }
 
-GetPersonsRequest::GetPersonsRequest(PersonIdType friendsOf)
-	: friendsOf(friendsOf)
+NewMessageCommand::NewMessageCommand(const Person& from, const Message& message)
+	: from(from)
+	, message(message)
 {
-
 }
 
-GetPersonsRequest::GetPersonsRequest(const QJsonObject& json)
-	: friendsOf(json["friendsOf"].toInt())
+NewMessageCommand::NewMessageCommand(const QJsonObject& json)
+	: from(json["from"].toObject())
+	, message(json["message"].toObject())
 {
-	assert(json[typeField].toString() == getPersonsRequest);
+	assert(json[typeField].toString() == newMessageCommand);
 }
 
-QJsonObject GetPersonsRequest::toJson() const
+QJsonObject NewMessageCommand::toJson() const
 {
-	return 
+	return
 	{
-		{ typeField, getPersonsRequest },
-		{ "friendsOf", friendsOf }
+		{ typeField, newMessageCommand },
+		{ "from", from.toJson() },
+		{ "message", message.toJson() }
 	};
-}
-
-GetPersonsResponse::GetPersonsResponse(const std::vector<Person>& persons)
-	: persons(persons)
-{
-}
-
-GetPersonsResponse::GetPersonsResponse(const QJsonObject& json)
-{
-	assert(json[typeField].toString() == getMessagesResponse);
-
-	assert(json["persons"].isArray());
-
-	QJsonArray personsInJson = json["persons"].toArray();
-	persons.resize(personsInJson.size());
-
-	std::transform(personsInJson.constBegin(), personsInJson.constEnd(), persons.begin(),
-		[](const QJsonValue& value)
-	{
-		assert(value.isObject());
-		return Person(value.toObject());
-	});
 }

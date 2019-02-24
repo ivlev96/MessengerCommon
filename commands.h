@@ -23,8 +23,7 @@ extern QString sendMessagesResponse;
 extern QString getMessagesRequest;
 extern QString getMessagesResponse;
 
-extern QString getPersonsRequest;
-extern QString getPersonsResponse;
+extern QString newMessageCommand;
 
 extern QString typeField;
 
@@ -203,32 +202,17 @@ public:
 	std::optional<MessageIdType> before;
 };
 
-
-struct GetPersonsRequest
+struct NewMessageCommand
 {
 public:
-	GetPersonsRequest(PersonIdType friendsOf);
-	explicit GetPersonsRequest(const QJsonObject& json);
+	NewMessageCommand(const Person& from, const Message& message);
+	explicit NewMessageCommand(const QJsonObject& json);
 
 	QJsonObject toJson() const;
 
 public:
-	PersonIdType friendsOf;
-};
-
-struct GetPersonsResponse
-{
-public:
-	GetPersonsResponse(const std::vector<Person>& persons);
-	explicit GetPersonsResponse(const QJsonObject& json);
-
-	QJsonObject toJson() const;
-
-private:
-	QJsonArray personsToJson() const;
-
-public:
-	std::vector<Person> persons;
+	Person from;
+	Message message;
 };
 
 }
