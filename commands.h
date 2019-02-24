@@ -113,7 +113,7 @@ public:
 struct GetLastMessagesRequest
 {
 public:
-	GetLastMessagesRequest(PersonIdType id, int count, bool isNew);
+	GetLastMessagesRequest(PersonIdType id, int count, const std::optional<MessageIdType>& before = {});
 	explicit GetLastMessagesRequest(const QJsonObject& json);
 
 	QJsonObject toJson() const;
@@ -121,21 +121,24 @@ public:
 public:
 	PersonIdType id;
 	int count;
-	bool isNew;
+	std::optional<MessageIdType> before;
 };
 
 struct GetLastMessagesResponse
 {
 public:
-	GetLastMessagesResponse(PersonIdType id, bool isNew, const std::vector<std::pair<Person, Message>>& messages);
+	GetLastMessagesResponse(PersonIdType id, 
+		const std::vector<std::pair<Person, Message>>& messages, 
+		const std::optional<MessageIdType>& before = {});
+
 	explicit GetLastMessagesResponse(const QJsonObject& json);
 
 	QJsonObject toJson() const;
 
 public:
 	PersonIdType id;
-	bool isNew;
 	std::vector<std::pair<Person, Message>> messages;
+	std::optional<MessageIdType> before;
 };
 
 struct SendMessagesRequest
@@ -173,7 +176,7 @@ public:
 struct GetMessagesRequest
 {
 public:
-	GetMessagesRequest(PersonIdType id1, PersonIdType id2, bool isNew, int count, std::optional<MessageIdType> before = {});
+	GetMessagesRequest(PersonIdType id1, PersonIdType id2, int count, std::optional<MessageIdType> before = {});
 	explicit GetMessagesRequest(const QJsonObject& json);
 
 	QJsonObject toJson() const;
@@ -181,7 +184,6 @@ public:
 public:
 	PersonIdType id1;
 	PersonIdType id2;
-	bool isNew;
 	int count;
 	std::optional<MessageIdType> before;
 };
@@ -189,18 +191,14 @@ public:
 struct GetMessagesResponse
 {
 public:
-	GetMessagesResponse(PersonIdType id1, PersonIdType id2, bool isNew, const std::vector<Message>& messages, std::optional<MessageIdType> before = {});
+	GetMessagesResponse(PersonIdType id1, PersonIdType id2, const std::vector<Message>& messages, std::optional<MessageIdType> before = {});
 	explicit GetMessagesResponse(const QJsonObject& json);
 
 	QJsonObject toJson() const;
 
-private:
-	QJsonArray messagesToJson() const;
-
 public:
 	PersonIdType id1;
 	PersonIdType id2;
-	bool isNew;
 	std::vector<Message> messages;
 	std::optional<MessageIdType> before;
 };

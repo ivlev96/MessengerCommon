@@ -167,10 +167,10 @@ QJsonObject LogInResponse::toJson() const
 	};
 }
 
-GetLastMessagesRequest::GetLastMessagesRequest(PersonIdType id, int count, bool isNew)
+GetLastMessagesRequest::GetLastMessagesRequest(PersonIdType id, int count, const std::optional<MessageIdType>& before)
 	: id(id)
 	, count(count)
-	, isNew(isNew)
+	, before(before)
 {
 	assert(count > 0);
 }
@@ -178,9 +178,14 @@ GetLastMessagesRequest::GetLastMessagesRequest(PersonIdType id, int count, bool 
 GetLastMessagesRequest::GetLastMessagesRequest(const QJsonObject& json)
 	: id(json["id"].toInt())
 	, count(json["count"].toInt())
-	, isNew(json["isNew"].toBool())
+	, before()
 {
 	assert(json[typeField].toString() == getLastMessagesRequest);
+
+	if (!json["before"].isNull())
+	{
+		before = json["before"].toInt();
+	}
 }
 
 QJsonObject Common::GetLastMessagesRequest::toJson() const
@@ -190,22 +195,29 @@ QJsonObject Common::GetLastMessagesRequest::toJson() const
 		{ typeField, getMessagesRequest },
 		{ "id", id },
 		{ "count", count },
-		{ "isNew", isNew }
+		{ "before", before.has_value() ? *before : QJsonValue() }
 	};
 }
 
-GetLastMessagesResponse::GetLastMessagesResponse(PersonIdType id, bool isNew, const std::vector<std::pair<Person, Message>>& messages)
+GetLastMessagesResponse::GetLastMessagesResponse(PersonIdType id,
+	const std::vector<std::pair<Person, Message>>& messages,
+	const std::optional<MessageIdType>& before)
 	: id(id)
-	, isNew(isNew)
 	, messages(messages)
+	, before(before)
 {
 }
 
 GetLastMessagesResponse::GetLastMessagesResponse(const QJsonObject& json)
 	: id(json["id"].toInt())
-	, isNew(json["isNew"].toBool())
+	, before()
 {
 	assert(json[typeField].toString() == getLastMessagesResponse);
+
+	if (!json["before"].isNull())
+	{
+		before = json["before"].toInt();
+	}
 
 	const QJsonValue messagesValue = json["messages"];
 	assert(messagesValue.isArray());
@@ -242,8 +254,8 @@ QJsonObject GetLastMessagesResponse::toJson() const
 	{
 		{ typeField, getLastMessagesResponse },
 		{ "id", id },
-		{ "isNew", isNew },
-		{ "messages", messagesJson }
+		{ "messages", messagesJson },
+		{ "before",  before.has_value() ? *before : QJsonValue() }
 	};
 }
 
@@ -324,27 +336,23 @@ QJsonObject SendMessagesResponse::toJson() const
 	};
 }
 
-GetMessagesRequest::GetMessagesRequest(PersonIdType id1, PersonIdType id2, bool isNew, int count, std::optional<MessageIdType> before)
+GetMessagesRequest::GetMessagesRequest(PersonIdType id1, PersonIdType id2, int count, std::optional<MessageIdType> before)
 	: id1(id1)
 	, id2(id2)
-	, isNew(isNew)
 	, count(count)
 	, before(before)
 {
-	assert(isNew != before.has_value());
 }
 
 GetMessagesRequest::GetMessagesRequest(const QJsonObject& json)
 	: id1(json["id1"].toInt())
 	, id2(json["id2"].toInt())
-	, isNew(json["isNew"].toBool())
 	, count(json["count"].toInt())
 	, before()
 {
 	assert(json[typeField].toString() == getMessagesRequest);
-	assert(json["before"].isNull() != isNew);
 
-	if (!isNew)
+	if (!json["before"].isNull())
 	{
 		before = json["before"].toInt();
 	}
@@ -352,38 +360,33 @@ GetMessagesRequest::GetMessagesRequest(const QJsonObject& json)
 
 QJsonObject GetMessagesRequest::toJson() const
 {
-	const QJsonValue beforeValue = isNew ? QJsonValue() : *before;
 	return 
 	{
 		{ typeField, getMessagesRequest },
 		{ "id1", id1 },
 		{ "id2", id2 },
-		{ "isNew", isNew },
 		{ "count", count },
-		{ "before", beforeValue }
+		{ "before", before.has_value() ? *before : QJsonValue() }
 	};
 }
 
-GetMessagesResponse::GetMessagesResponse(PersonIdType id1, PersonIdType id2, bool isNew, const std::vector<Message>& messages, std::optional<MessageIdType> before)
+GetMessagesResponse::GetMessagesResponse(PersonIdType id1, PersonIdType id2, const std::vector<Message>& messages, std::optional<MessageIdType> before)
 	: id1(id1)
 	, id2(id2)
-	, isNew(isNew)
 	, messages(messages)
 	, before(before)
 {
-	assert(isNew != before.has_value());
 }
 
 GetMessagesResponse::GetMessagesResponse(const QJsonObject& json)
 	: id1(json["id1"].toInt())
 	, id2(json["id2"].toInt())
-	, isNew(json["isNew"].toBool())
+	, before()
 {
 	assert(json[typeField].toString() == getMessagesResponse);
 	assert(json["messages"].isArray());
-	assert(json["before"].isNull() != isNew);
 
-	if (!isNew)
+	if (!json["before"].isNull())
 	{
 		before = json["before"].toInt();
 	}
@@ -401,27 +404,22 @@ GetMessagesResponse::GetMessagesResponse(const QJsonObject& json)
 
 QJsonObject GetMessagesResponse::toJson() const
 {
+	QJsonArray messagesJson;
+
+	std::transform(messages.cbegin(), messages.cend(), std::back_inserter(messagesJson),
+		[](const Message& message)
+	{
+		return message.toJson();
+	});
+
 	return 
 	{
 		{ typeField, getMessagesResponse },
 		{ "id1", id1 },
 		{ "id2", id2 },
-		{ "isNew", isNew },
-		{ "messages", messagesToJson() },
+		{ "messages", messagesJson },
+		{ "before", before.has_value() ? *before : QJsonValue() }
 	};
-}
-
-QJsonArray GetMessagesResponse::messagesToJson() const
-{
-	QJsonArray json;
-
-	std::transform(messages.cbegin(), messages.cend(), std::back_inserter(json), 
-		[](const Message& message)
-		{
-			return message.toJson();
-		});
-
-	return json;
 }
 
 GetPersonsRequest::GetPersonsRequest(PersonIdType friendsOf)
