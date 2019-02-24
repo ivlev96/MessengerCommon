@@ -191,7 +191,7 @@ QJsonObject Common::GetLastMessagesRequest::toJson() const
 {
 	return
 	{
-		{ typeField, getMessagesRequest },
+		{ typeField, getLastMessagesRequest },
 		{ "id", id },
 		{ "count", count },
 		{ "before", before.has_value() ? *before : QJsonValue() }
