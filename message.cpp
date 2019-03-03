@@ -56,7 +56,7 @@ Message::Message(const QJsonObject& json)
 		id = json["id"].toInt();
 	}
 
-	assert(!json.empty());
+	ASSERT(!json.empty());
 }
 
 QJsonObject Message::toJson() const

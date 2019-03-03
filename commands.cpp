@@ -31,7 +31,7 @@ ErrorResponse::ErrorResponse(const QString& error)
 ErrorResponse::ErrorResponse(const QJsonObject& json)
 	: error(json["error"].toString())
 {
-	assert(json[typeField].toString() == errorResponse);
+	ASSERT(json[typeField].toString() == errorResponse);
 }
 
 QJsonObject Common::ErrorResponse::toJson() const
@@ -64,7 +64,7 @@ RegistrationRequest::RegistrationRequest(const QJsonObject& json)
 	, login(json["login"].toString())
 	, password(json["password"].toString())
 {
-	assert(json[typeField].toString() == registrationRequest);
+	ASSERT(json[typeField].toString() == registrationRequest);
 }
 
 QJsonObject RegistrationRequest::toJson() const
@@ -90,8 +90,8 @@ RegistrationResponse::RegistrationResponse(const QJsonObject& json)
 	: ok(json["ok"].toBool())
 	, person()
 {
-	assert(json[typeField].toString() == registrationResponse);
-	assert(ok != json["person"].isNull());
+	ASSERT(json[typeField].toString() == registrationResponse);
+	ASSERT(ok != json["person"].isNull());
 
 	if (ok)
 	{
@@ -122,7 +122,7 @@ LogInRequest::LogInRequest(const QJsonObject& json)
 	: login(json["login"].toString())
 	, password(json["password"].toString())
 {
-	assert(json[typeField].toString() == logInRequest);
+	ASSERT(json[typeField].toString() == logInRequest);
 }
 
 QJsonObject LogInRequest::toJson() const
@@ -145,8 +145,8 @@ LogInResponse::LogInResponse(const QJsonObject& json)
 	: ok(json["ok"].toBool())
 	, person()
 {
-	assert(json[typeField].toString() == logInResponse);
-	assert(ok != json["person"].isNull());
+	ASSERT(json[typeField].toString() == logInResponse);
+	ASSERT(ok != json["person"].isNull());
 
 	if (ok)
 	{
@@ -171,7 +171,7 @@ GetLastMessagesRequest::GetLastMessagesRequest(PersonIdType id, int count, const
 	, count(count)
 	, before(before)
 {
-	assert(count > 0);
+	ASSERT(count > 0);
 }
 
 GetLastMessagesRequest::GetLastMessagesRequest(const QJsonObject& json)
@@ -179,7 +179,7 @@ GetLastMessagesRequest::GetLastMessagesRequest(const QJsonObject& json)
 	, count(json["count"].toInt())
 	, before()
 {
-	assert(json[typeField].toString() == getLastMessagesRequest);
+	ASSERT(json[typeField].toString() == getLastMessagesRequest);
 
 	if (!json["before"].isNull())
 	{
@@ -211,7 +211,7 @@ GetLastMessagesResponse::GetLastMessagesResponse(const QJsonObject& json)
 	: id(json["id"].toInt())
 	, before()
 {
-	assert(json[typeField].toString() == getLastMessagesResponse);
+	ASSERT(json[typeField].toString() == getLastMessagesResponse);
 
 	if (!json["before"].isNull())
 	{
@@ -219,7 +219,7 @@ GetLastMessagesResponse::GetLastMessagesResponse(const QJsonObject& json)
 	}
 
 	const QJsonValue messagesValue = json["messages"];
-	assert(messagesValue.isArray());
+	ASSERT(messagesValue.isArray());
 
 	const QJsonArray messagesArray = messagesValue.toArray();
 
@@ -267,16 +267,16 @@ SendMessagesRequest::SendMessagesRequest(const std::vector<Message>& messages)
 SendMessagesRequest::SendMessagesRequest(const QJsonObject& json)
 	: messages()
 {
-	assert(json[typeField].toString() == sendMessagesRequest);
+	ASSERT(json[typeField].toString() == sendMessagesRequest);
 	
-	assert(json["messages"].isArray());
+	ASSERT(json["messages"].isArray());
 	QJsonArray jsonArray = json["messages"].toArray();
 
 	messages.resize(jsonArray.size());
 	std::transform(jsonArray.constBegin(), jsonArray.constEnd(), messages.begin(),
 		[](const QJsonValue& value)
 		{
-			assert(value.isObject());
+			ASSERT(value.isObject());
 			return Message(value.toObject());
 		});
 }
@@ -305,16 +305,16 @@ SendMessagesResponse::SendMessagesResponse(const std::vector<Message>& messages)
 
 SendMessagesResponse::SendMessagesResponse(const QJsonObject& json)
 {
-	assert(json[typeField].toString() == sendMessagesResponse);
+	ASSERT(json[typeField].toString() == sendMessagesResponse);
 
-	assert(json["messages"].isArray());
+	ASSERT(json["messages"].isArray());
 	QJsonArray jsonArray = json["messages"].toArray();
 
 	messages.resize(jsonArray.size());
 	std::transform(jsonArray.constBegin(), jsonArray.constEnd(), messages.begin(),
 		[](const QJsonValue& value)
 	{
-		assert(value.isObject());
+		ASSERT(value.isObject());
 		return Message(value.toObject());
 	});
 }
@@ -349,7 +349,7 @@ GetMessagesRequest::GetMessagesRequest(const QJsonObject& json)
 	, count(json["count"].toInt())
 	, before()
 {
-	assert(json[typeField].toString() == getMessagesRequest);
+	ASSERT(json[typeField].toString() == getMessagesRequest);
 
 	if (!json["before"].isNull())
 	{
@@ -382,8 +382,8 @@ GetMessagesResponse::GetMessagesResponse(const QJsonObject& json)
 	, id2(json["id2"].toInt())
 	, before()
 {
-	assert(json[typeField].toString() == getMessagesResponse);
-	assert(json["messages"].isArray());
+	ASSERT(json[typeField].toString() == getMessagesResponse);
+	ASSERT(json["messages"].isArray());
 
 	if (!json["before"].isNull())
 	{
@@ -396,7 +396,7 @@ GetMessagesResponse::GetMessagesResponse(const QJsonObject& json)
 	std::transform(messagesInJson.constBegin(), messagesInJson.constEnd(), messages.begin(), 
 		[](const QJsonValue& value)
 		{
-			assert(value.isObject());
+			ASSERT(value.isObject());
 			return Message(value.toObject());
 		});
 }
@@ -431,7 +431,7 @@ NewMessageCommand::NewMessageCommand(const QJsonObject& json)
 	: from(json["from"].toObject())
 	, message(json["message"].toObject())
 {
-	assert(json[typeField].toString() == newMessageCommand);
+	ASSERT(json[typeField].toString() == newMessageCommand);
 }
 
 QJsonObject NewMessageCommand::toJson() const
