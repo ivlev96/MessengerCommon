@@ -9,4 +9,10 @@ namespace Common
 	extern quint32 defaultTimeot;
 	extern quint16 serverPort;
 	extern QUrl serverUrl;
+
+	template<typename T>
+	QString toString(const T& object)
+	{
+		return QJsonDocument(object.toJson()).toJson();
+	}
 }
