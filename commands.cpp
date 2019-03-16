@@ -82,18 +82,15 @@ QJsonObject RegistrationRequest::toJson() const
 
 RegistrationResponse::RegistrationResponse(const std::optional<Person>& person)
 	: person(person)
-	, ok(person.has_value())
 {
 }
 
 RegistrationResponse::RegistrationResponse(const QJsonObject& json)
-	: ok(json["ok"].toBool())
-	, person()
+	: person()
 {
 	ASSERT(json[typeField].toString() == registrationResponse);
-	ASSERT(ok != json["person"].isNull());
 
-	if (ok)
+	if (!json["person"].isNull())
 	{
 		person = Person(json["person"].toObject());
 	}
@@ -101,12 +98,11 @@ RegistrationResponse::RegistrationResponse(const QJsonObject& json)
 
 QJsonObject RegistrationResponse::toJson() const
 {
-	const QJsonValue personValue = ok ? person->toJson() : QJsonValue();
+	const QJsonValue personValue = person ? person->toJson() : QJsonValue();
 
 	return
 	{
 		{ typeField, registrationResponse },
-		{ "ok", ok },
 		{ "person", personValue }
 	};
 }
@@ -137,18 +133,15 @@ QJsonObject LogInRequest::toJson() const
 
 LogInResponse::LogInResponse(const std::optional<Person>& person)
 	: person(person)
-	, ok(person.has_value())
 {
 }
 
 LogInResponse::LogInResponse(const QJsonObject& json)
-	: ok(json["ok"].toBool())
-	, person()
+	: person()
 {
 	ASSERT(json[typeField].toString() == logInResponse);
-	ASSERT(ok != json["person"].isNull());
 
-	if (ok)
+	if (!json["person"].isNull())
 	{
 		person = Person(json["person"].toObject());
 	}
@@ -156,12 +149,11 @@ LogInResponse::LogInResponse(const QJsonObject& json)
 
 QJsonObject LogInResponse::toJson() const
 {
-	const QJsonValue personValue = ok ? person->toJson() : QJsonValue();
+	const QJsonValue personValue = person ? person->toJson() : QJsonValue();
 
 	return
 	{
 		{ typeField, logInResponse },
-		{ "ok", ok },
 		{ "person", personValue }
 	};
 }

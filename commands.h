@@ -77,7 +77,6 @@ public:
 	QJsonObject toJson() const;
 
 public:
-	bool ok;
 	std::optional<Person> person;
 };
 
@@ -104,7 +103,6 @@ public:
 	QJsonObject toJson() const;
 
 public:
-	bool ok;
 	std::optional<Person> person;
 };
 
