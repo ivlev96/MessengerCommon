@@ -1,7 +1,7 @@
 #include "common.h"
 
-QString Common::dateFormat("dd.MM.yyyy");
-QString Common::timeFormat("hh:mm:ss");
+QString Common::dateFormat("dd MMM");
+QString Common::timeFormat("hh:mm");
 QString Common::dateTimeFormat("dd.MM.yyyy hh:mm:ss");
 int Common::defaultMessagesCount(20);
 quint32 Common::defaultTimeot(5000);

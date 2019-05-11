@@ -25,6 +25,9 @@ extern QString getMessagesResponse;
 
 extern QString newMessageCommand;
 
+extern QString findFriendRequest;
+extern QString findFriendResponse;
+
 extern QString typeField;
 
 
@@ -200,6 +203,7 @@ public:
 	std::optional<MessageIdType> before;
 };
 
+
 struct NewMessageCommand
 {
 public:
@@ -211,6 +215,31 @@ public:
 public:
 	Person from;
 	Message message;
+};
+
+
+struct FindFriendRequest
+{
+public:
+	explicit FindFriendRequest(const QString& name);
+	explicit FindFriendRequest(const QJsonObject& json);
+
+	QJsonObject toJson() const;
+
+public:
+	QString name;
+};
+
+struct FindFriendResponse
+{
+public:
+	explicit FindFriendResponse(const std::vector<Person>& persons);
+	explicit FindFriendResponse(const QJsonObject& json);
+
+	QJsonObject toJson() const;
+
+public:
+	std::vector<Person> persons;
 };
 
 }

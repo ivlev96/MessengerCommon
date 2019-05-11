@@ -19,6 +19,9 @@ QString Common::getMessagesResponse("getMessagesResponse");
 
 QString Common::newMessageCommand("newMessageCommand");
 
+QString Common::findFriendRequest("findFriendRequest");
+QString Common::findFriendResponse("findFriendResponse");
+
 QString Common::typeField("_type");
 
 using namespace Common;
@@ -433,5 +436,65 @@ QJsonObject NewMessageCommand::toJson() const
 		{ typeField, newMessageCommand },
 		{ "from", from.toJson() },
 		{ "message", message.toJson() }
+	};
+}
+
+FindFriendRequest::FindFriendRequest(const QString& name)
+	: name(name)
+{
+	ASSERT(!name.isEmpty());
+}
+
+FindFriendRequest::FindFriendRequest(const QJsonObject& json)
+	: name(json["name"].toString())
+{
+	ASSERT(json[typeField].toString() == findFriendRequest);
+	ASSERT(!name.isEmpty());
+}
+
+QJsonObject FindFriendRequest::toJson() const
+{
+	return
+	{
+		{ typeField, findFriendRequest },
+		{ "name", name }
+	};
+}
+
+FindFriendResponse::FindFriendResponse(const std::vector<Person>& persons)
+	: persons(persons)
+{
+}
+
+FindFriendResponse::FindFriendResponse(const QJsonObject& json)
+{
+	ASSERT(json[typeField].toString() == findFriendResponse);
+
+	ASSERT(json["persons"].isArray());
+	QJsonArray jsonArray = json["persons"].toArray();
+
+	persons.resize(jsonArray.size());
+	std::transform(jsonArray.constBegin(), jsonArray.constEnd(), persons.begin(),
+		[](const QJsonValue& value)
+	{
+		ASSERT(value.isObject());
+		return Person(value.toObject());
+	});
+}
+
+QJsonObject FindFriendResponse::toJson() const
+{
+	QJsonArray personsJson;
+
+	std::transform(persons.cbegin(), persons.cend(), std::back_inserter(personsJson),
+		[](const Person& person)
+	{
+		return person.toJson();
+	});
+
+	return
+	{
+		{ typeField, findFriendResponse },
+		{ "persons", personsJson }
 	};
 }
