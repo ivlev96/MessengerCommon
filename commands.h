@@ -233,13 +233,13 @@ public:
 struct FindFriendResponse
 {
 public:
-	explicit FindFriendResponse(const std::vector<Person>& persons);
+	explicit FindFriendResponse(const std::vector<std::pair<Person, std::optional<Message>>>& persons);
 	explicit FindFriendResponse(const QJsonObject& json);
 
 	QJsonObject toJson() const;
 
 public:
-	std::vector<Person> persons;
+	std::vector<std::pair<Person, std::optional<Message>>> persons;
 };
 
 }

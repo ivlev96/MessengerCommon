@@ -461,7 +461,7 @@ QJsonObject FindFriendRequest::toJson() const
 	};
 }
 
-FindFriendResponse::FindFriendResponse(const std::vector<Person>& persons)
+FindFriendResponse::FindFriendResponse(const std::vector<std::pair<Person, std::optional<Message>>>& persons)
 	: persons(persons)
 {
 }
@@ -478,7 +478,11 @@ FindFriendResponse::FindFriendResponse(const QJsonObject& json)
 		[](const QJsonValue& value)
 	{
 		ASSERT(value.isObject());
-		return Person(value.toObject());
+		const auto valueObject = value.toObject();
+		return std::make_pair(
+			Person(valueObject["person"].toObject()),
+			valueObject["message"].isNull() ? std::optional<Message>{} : Message(valueObject["message"].toObject())
+		);
 	});
 }
 
@@ -487,9 +491,13 @@ QJsonObject FindFriendResponse::toJson() const
 	QJsonArray personsJson;
 
 	std::transform(persons.cbegin(), persons.cend(), std::back_inserter(personsJson),
-		[](const Person& person)
+		[](const auto& pair) -> QJsonObject
 	{
-		return person.toJson();
+		return 
+		{
+			{ "person", pair.first.toJson() },
+			{ "message", pair.second ? pair.second->toJson() : QJsonValue() }
+		};
 	});
 
 	return
