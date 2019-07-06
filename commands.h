@@ -221,13 +221,26 @@ public:
 struct FindFriendRequest
 {
 public:
-	explicit FindFriendRequest(const QString& name);
+	explicit FindFriendRequest(
+		const Common::PersonIdType& id, 
+		const QString& name, 
+		bool withMessages, 
+		bool withoutMessages,
+		std::optional<PersonIdType> before,
+		int count
+	);
+
 	explicit FindFriendRequest(const QJsonObject& json);
 
 	QJsonObject toJson() const;
 
 public:
+	Common::PersonIdType id;
 	QString name;
+	bool withMessages;
+	bool withoutMessages;
+	std::optional<PersonIdType> before;
+	int count;
 };
 
 struct FindFriendResponse

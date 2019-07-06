@@ -6,6 +6,7 @@ namespace Common
 	extern QString timeFormat;
 	extern QString dateTimeFormat;
 	extern int defaultMessagesCount;
+	extern int defaultPersonsCount;
 	extern quint32 defaultTimeot;
 	extern quint16 serverPort;
 	extern QUrl serverUrl;

@@ -439,17 +439,38 @@ QJsonObject NewMessageCommand::toJson() const
 	};
 }
 
-FindFriendRequest::FindFriendRequest(const QString& name)
+FindFriendRequest::FindFriendRequest(
+	const Common::PersonIdType& id,
+	const QString& name,
+	bool withMessages,
+	bool withoutMessages,
+	std::optional<PersonIdType> before,
+	int count)
 	: name(name)
+	, id(id)
+	, withMessages(withMessages)
+	, withoutMessages(withoutMessages)
+	, before(before)
+	, count(count)
 {
 	ASSERT(!name.isEmpty());
 }
 
 FindFriendRequest::FindFriendRequest(const QJsonObject& json)
 	: name(json["name"].toString())
+	, id(json["id"].toInt())
+	, withMessages(json["withMessages"].toBool())
+	, withoutMessages(json["withoutMessages"].toBool())
+	, count(json["count"].toInt())
+	, before()
 {
 	ASSERT(json[typeField].toString() == findFriendRequest);
 	ASSERT(!name.isEmpty());
+
+	if (!json["before"].isNull())
+	{
+		before = json["before"].toInt();
+	}
 }
 
 QJsonObject FindFriendRequest::toJson() const
@@ -457,7 +478,12 @@ QJsonObject FindFriendRequest::toJson() const
 	return
 	{
 		{ typeField, findFriendRequest },
-		{ "name", name }
+		{ "id", id },
+		{ "name", name },
+		{ "withMessages", withMessages },
+		{ "withoutMessages", withoutMessages },
+		{ "before", before ? *before : QJsonValue() },
+		{ "count", count }
 	};
 }
 
