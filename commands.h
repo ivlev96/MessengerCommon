@@ -226,7 +226,7 @@ public:
 		const QString& name, 
 		bool withMessages, 
 		bool withoutMessages,
-		std::optional<PersonIdType> before,
+		std::optional<PersonIdType> after,
 		int count
 	);
 
@@ -239,7 +239,7 @@ public:
 	QString name;
 	bool withMessages;
 	bool withoutMessages;
-	std::optional<PersonIdType> before;
+	std::optional<PersonIdType> after;
 	int count;
 };
 
